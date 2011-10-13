@@ -135,7 +135,7 @@ class Connection:
         stmt.close()
         return res
 
-    def executeWrite(self, query, type='csv', header=True, file=sys.stdout, show=False):
+    def executeWrite(self, query, type='csv', header='names', file=sys.stdout, show=False):
         """
         Execute the query and print the results.
 
@@ -145,8 +145,10 @@ class Connection:
             A query to execute
         type: string, optional
             The format for writing.  Default 'csv'
-        header: bool, optional
-            Put a header on csv outputs.
+        header: string,optional
+            If not False, put a header.  Can be
+                'names' csv names
+                'rec'   rec file header
         file: file object, optional
             Write the results to the file. Default is stdout
         show: bool, optional
@@ -163,9 +165,9 @@ class Connection:
         rw.write(type=type, header=header, file=file)
         stmt.close()
 
-def write_result(rset, type='csv', header=True, file=sys.stdout):
+def write_result(rset, type='csv', header='names', file=sys.stdout):
     rw=ResultWriter(rset)
-    rw.write(type=type, file=file, header=header)
+    rw.write(type=type, file=file, header='names')
 
 class ResultWriter:
     """
@@ -205,7 +207,7 @@ class ResultWriter:
 
         return '\n'.join(rep)
 
-    def write(self, type='csv', header=True, file=sys.stdout):
+    def write(self, type='csv', header='names', file=sys.stdout):
         """
         Print out a result set.  Need to figure out how
         to use a custom result set that can write itself
@@ -217,7 +219,8 @@ class ResultWriter:
         else:
             raise ValueError("only support csv writing for now")
 
-    def write_csv(self, header=True, file=sys.stdout):
+
+    def write_csv(self, header='names', file=sys.stdout):
         """
         informed by trivialAccess.py
         """
@@ -229,16 +232,16 @@ class ResultWriter:
             # no results,  exit, no header
             return
 
-        hdr=[]
-        for c in xrange(ncol): 
-            name = meta.getColumnLabel(c+1).lower()
-            hdr.append(name)
 
         writer = csv.writer(sys.stdout,dialect='excel',
                             quoting=csv.QUOTE_MINIMAL)
 
-        if header : 
+        if header == 'names': 
+            hdr = get_names_list(meta)
             writer.writerow(hdr)
+        elif header in ['rec','numpy']:
+            pass
+            #descr = get_numpy_descr(meta)
 
         nresults = 0
         while (self.rset.next()):
@@ -249,4 +252,45 @@ class ResultWriter:
             nresults += 1
         return nresults
 
+def get_names_list(meta):
+    ncol = meta.getColumnCount()
+    hdr=[]
+    for c in xrange(ncol): 
+        name = meta.getColumnLabel(c+1).lower()
+        hdr.append(name)
+    return hdr
 
+def get_numpy_descr(meta):
+    """
+    Extract a value.  Default to string for non-numeric types
+    """
+    ncol = meta.getColumnCount()
+    descr=[]
+    
+    for col in xrange(1,ncol+1):
+        typ = meta.getColumnTypeName(colnum)
+        if 'CHAR' in typ:
+            nchar=meta.getPrecision(colnum)
+            dt='S%d' % nchar
+        elif typ=='DATE':
+            # may be OK with 21..
+            dt='S23'
+        elif typ == 'BINARY_DOUBLE':
+            dt='f8'
+        elif typ == 'BINARY_FLOAT':
+            dt='f8'
+        elif dtype == 'NUMBER':
+            # can do better than this
+            scale = meta.getScale(colnum)
+            if scale > 0:
+                dt='f8'
+            else:
+                dt='i8'
+        else:
+            raise ValueError("Don't know how to make fixed length "
+                             "col for type '%s'" % type)
+
+        d = (name,dt)
+
+        descr.append(d)
+    return descr
