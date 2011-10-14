@@ -9,7 +9,7 @@ to see red runs or coadd runs for instance.
 import os
 import sys
 from desdb import desdb
-from desdb import web
+from desdb import files
 import csv
 
 from optparse import OptionParser
@@ -33,6 +33,15 @@ def main():
     show=options.show
     url=options.url
 
+    if filetype == 'red':
+        extra='order by nite'
+    elif filetype == 'coadd':
+        extra='order by tilename'
+    else:
+        dtype=None
+        extra='order by run'
+
+
     # ugh, jython is still on 2.5, no nice string formatting
     query="""
     select
@@ -40,21 +49,16 @@ def main():
     from
         %s_files
     where
-        filetype='%s'\n""" % (release,filetype)
+        filetype='%s' %s\n""" % (release,filetype,extra)
 
     conn=desdb.Connection(user=options.user,password=options.password)
 
     res = conn.execute(query,show=show)
 
-    if filetype == 'red':
-        res.sort(key=lambda rec: rec['nite'])
-    elif filetype == 'coadd':
-        res.sort(key=lambda rec: rec['tilename'])
-    else:
-        res.sort(key=lambda rec: rec['run'])
-
     if url:
-        urls = [web.get_run_url(filetype,r['run']) for r in res]
+        dtype='%s_run' % filetype
+        df=files.DESFiles(root='web')
+        urls = [df.url(dtype,run=r['run']) for r in res]
         print 'run,url'
         for i in xrange(len(res)):
             print "%s,%s" % (res[i]['run'],urls[i])

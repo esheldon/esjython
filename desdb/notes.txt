@@ -1,0 +1,17 @@
+Currently we can select files from the database by release, or even go to these
+links
+
+    https://desar.cosmology.illinois.edu/DESFiles/desardata/Release/$RELEASE/
+
+However, when we are in the middle of a run we won't have an official release
+of red and coadd images.  Rather we will have nites.  There could be many
+different processings of a given nite.  At the beginning these could
+appear in rapid succession as bugs are squashed and features added.
+
+How will we know when a nite is ready to download?  
+
+Should we instead expect a "rolling release" situation?  For example, perhaps
+we can monitor the database for "red" and "coadd" runs that are marked as
+ready?
+
+-e

@@ -7,8 +7,12 @@ import sys
 from sys import stderr
 import csv
 
-import java.sql
-from java.sql import DriverManager
+try:
+    from java.sql import DriverManager
+except:
+    # did we even expect this to work?
+    if sys.subversion[0] == 'Jython':
+        print 'Could not load java DriverManager library'
 
 # host/port/dbname
 _url_template =  "jdbc:oracle:thin://@%s:%s/%s"
