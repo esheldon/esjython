@@ -37,9 +37,9 @@ def main():
         filetype='coadd' %s
         and band = '%s'\n""" % (release,band)
 
-    desdb=des.desdb.Connection(user=options.user,password=options.password)
+    conn=desdb.Connection(user=options.user,password=options.password)
 
-    r = desdb.executeWrite(query,show=True)
+    r = conn.executeWrite(query,show=True)
 
 if __name__=="__main__":
     main()

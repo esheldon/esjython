@@ -32,11 +32,9 @@ def main():
         sys.exit(45)
 
 
-    dataset=args[0].strip()
+    release=args[0].strip()
     band=args[1].strip()
     verbose=options.verbose
-
-    release=des.desdb.dataset2release(dataset)
 
     # ugh, jython is still on 2.5, no nice string formatting
     query="""
@@ -48,7 +46,7 @@ def main():
         filetype='coadd'
         and band = '%s'\n""" % (release,band)
 
-    desdb=des.desdb.Connection(user=options.user,password=options.password)
+    conn=desdb.Connection(user=options.user,password=options.password)
 
     res = desdb.execute(query, show=verbose)
     first=True

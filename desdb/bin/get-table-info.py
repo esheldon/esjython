@@ -27,7 +27,7 @@ def main():
         rownum = 1
 
     table=args[0].strip()
-    c=des.desdb.Connection()
+    c=desdb.Connection()
     s=c.conn.createStatement()
     rset=s.executeQuery('select * from %s where rownum = %s' % (table,rownum))
 
