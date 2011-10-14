@@ -4,6 +4,9 @@ def get_url(type, root=None, **keys):
     df=DESFiles(root=root)
     return df.url(type, **keys)
 
+get_name=get_url
+get_path=get_url
+
 def des_rootdir():
     if 'DESDATA' not in os.environ:
         raise ValueError("The DESDATA environment variable is not set")
@@ -14,15 +17,19 @@ def des_web_rootdir():
 
 class DESFiles:
     """
-    Generate file names from filetype, run, etc.
+    Generate file urls/paths from filetype, run, etc.
 
-    parameters:
-        root: string, optional
-            The root for filenames.  Defaults to the DESDATA environment
-            variable.
+    The returned name is a local path or web url.  The generic
+    name "url" is used for both.
 
-            If you send root='web', the following is used:
-                https://desar.cosmology.illinois.edu/DESFiles/desardata/DES
+    parameters
+    ----------
+    root: string, optional
+        The root for filenames.  Defaults to the DESDATA environment
+        variable.
+
+        If you send root='web', the following is used:
+            https://desar.cosmology.illinois.edu/DESFiles/desardata/DES
 
 
     Notes
@@ -91,11 +98,9 @@ _fs['coadd_run']   = {'dir':'$DESDATA/coadd/$RUN/coadd/'}
 _fs['coadd_image'] = {'dir':_fs['coadd_run']['dir'], 'name':'$TILENAME-$BAND.fits.fz'}
 _fs['coadd_cat']   = {'dir':_fs['coadd_run']['dir'], 'name':'$TILENAME-$BAND_cat.fits'}
 
-def expand_desvars(string, **keys):
+def expand_desvars(string_in, **keys):
 
-    # this will expand all environment variables, e.g. $PHOTO_SWEEP
-    # if they don't exist, the result will be incomplete
-
+    string=string_in
 
     # allow keyword root=, desdata=, or fall back to environment variable
     if string.find('$DESDATA') != -1:
@@ -104,7 +109,7 @@ def expand_desvars(string, **keys):
             root=keys.get('desdata',None)
         if root is None:
             if 'DESDATA' not in os.environ:
-                raise ValueError("send desdata keyword or have DESDATA set for '%s'" % string)
+                raise ValueError("send desdata keyword or have DESDATA set for '%s'" % string_in)
             root=os.environ['DESDATA']
         string = string.replace('$DESDATA', str(root))
 
@@ -112,7 +117,7 @@ def expand_desvars(string, **keys):
     if string.find('$RUN') != -1:
         run=keys.get('run', None)
         if run is None:
-            raise ValueError("run keyword must be sent: '%s'" % string)
+            raise ValueError("run keyword must be sent: '%s'" % string_in)
         string = string.replace('$RUN', str(run))
 
     if string.find('$EXPOSURENAME') != -1:
@@ -122,28 +127,28 @@ def expand_desvars(string, **keys):
                 expname='%s-%s-%s' % (keys['pointing'],keys['band'],keys['visit'])
         if expname is None:
             raise ValueError("expname keyword or pointing,band,visit keywords "
-                             "must be sent: '%s'" % string)
+                             "must be sent: '%s'" % string_in)
 
         string = string.replace('$EXPOSURENAME', str(expname))
 
     if string.find('$CCD') != -1:
         ccd=keys.get('ccd', None)
         if ccd is None:
-            raise ValueError("ccd keyword must be sent: '%s'" % string)
+            raise ValueError("ccd keyword must be sent: '%s'" % string_in)
 
         string = string.replace('$CCD', str(ccd))
 
     if string.find('$BAND') != -1:
         band=keys.get('band', None)
         if band is None:
-            raise ValueError("band keyword must be sent: '%s'" % string)
+            raise ValueError("band keyword must be sent: '%s'" % string_in)
 
         string = string.replace('$BAND', str(band))
 
     # see if there are any leftover un-expanded variables.  If so
     # raise an exception
     if string.find('$') != -1:
-        raise ValueError("There were unexpanded variables: '%s'" % string)
+        raise ValueError("There were unexpanded variables: '%s'" % string_in)
 
     return string
 
