@@ -8,7 +8,7 @@ value is for the input rownum, default 1
 import os
 import sys
 import csv
-import des
+from desdb import desdb
 
 from optparse import OptionParser
 parser=OptionParser(__doc__)

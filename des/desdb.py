@@ -1,5 +1,5 @@
 """
-Based heavily off the DES trivialAccess.py
+Based heavily on code in the DES trivialAccess.py
 """
 
 import os
@@ -9,15 +9,10 @@ import csv
 
 import java.sql
 from java.sql import DriverManager
-#import oracle
 
-#from oracle.jdbc.driver import OracleDriver 
-#from  ncsa import  OracleFits
-#import oracle.jdbc.driver.OracleResultSetImpl
-#import oracle.jdbc.driver.OracleResultSet
-#import oracle.jdbc.driver
+# host/port/dbname
+_url_template =  "jdbc:oracle:thin://@%s:%s/%s"
 
-# a map so one can give a dataset or release
 _release_map={'dc6b':'dr012', 'dr012':'dr012'}
 
 
@@ -65,7 +60,7 @@ class Connection:
             password=data[1].strip()
 
         self.user=user                
-        self.url =  "jdbc:oracle:thin://@%s:%s/%s" % (self.host, self.port, self.dbname)
+        self.url =  _url_template % (self.host, self.port, self.dbname)
         self.conn =  DriverManager.getConnection(self.url, user, password)
         self.conn.setDefaultRowPrefetch(self.row_prefetch) 
 
@@ -148,7 +143,7 @@ class Connection:
         header: string,optional
             If not False, put a header.  Can be
                 'names' csv names
-                'rec'   rec file header
+                others?
         file: file object, optional
             Write the results to the file. Default is stdout
         show: bool, optional
@@ -237,11 +232,11 @@ class ResultWriter:
                             quoting=csv.QUOTE_MINIMAL)
 
         if header == 'names': 
-            hdr = get_names_list(meta)
+            hdr = get_column_names(meta)
             writer.writerow(hdr)
-        elif header in ['rec','numpy']:
-            pass
+        else:
             #descr = get_numpy_descr(meta)
+            pass
 
         nresults = 0
         while (self.rset.next()):
@@ -252,7 +247,7 @@ class ResultWriter:
             nresults += 1
         return nresults
 
-def get_names_list(meta):
+def get_column_names(meta):
     ncol = meta.getColumnCount()
     hdr=[]
     for c in xrange(ncol): 

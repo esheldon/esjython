@@ -1,14 +1,13 @@
 """
-    %prog [options] dataset band
+    %prog [options] release band
 
-Look up all coadd images in the input dataset and write out their file ids,
-along with some other info. Dataset is something like 'dc6b', which implies
-a release, or a release id like 'dr012'
+Look up all coadd images in the input release and write out their file ids,
+along with some other info. A release id is something like 'dr012' (dc6b)
 
 """
 import os
 import sys
-import des
+from desdb import desdb
 import csv
 
 from optparse import OptionParser
@@ -25,10 +24,8 @@ def main():
         sys.exit(45)
 
 
-    dataset=args[0].strip()
+    release=args[0].strip()
     band=args[1].strip()
-
-    release=des.desdb.dataset2release(dataset)
 
     # ugh, jython is still on 2.5, no nice string formatting
     query="""

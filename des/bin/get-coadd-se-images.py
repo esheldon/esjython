@@ -1,19 +1,19 @@
 """
-    %prog [options] dataset band
+    %prog [options] release band
 
-Look up all coadd images in the input dataset and bandpass, find the SE images
-that were used as input, and write out the coadd id and se filename info.
-Dataset is something like 'dc6b' or 'dr012'
+Look up all coadd images for the requested release and bandpass, find the single
+epoch 'red' images that were used as input, and write out a csv with the coadd
+and red image info.  Release is something like 'dr012'
 
 columns will be
 
-coadd_id,id,filetype,run,exposurename,filename,band,ccd
+coadd_id,red_id,filetype,run,exposurename,band,ccd,filename
 
 """
 import os
 import sys
 from sys import stderr
-import des
+from desdb import desdb
 import csv
 
 from optparse import OptionParser
@@ -101,7 +101,7 @@ def main():
         query="""
         select
             %s as coadd_id,
-            id,
+            id as red_id,
             filetype,
             run,
             exposurename,
@@ -116,7 +116,7 @@ def main():
 
 
         if first:
-            header=True
+            header='names'
         else:
             header=False
 
